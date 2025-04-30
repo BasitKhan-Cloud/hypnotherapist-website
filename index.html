@@ -1,137 +1,308 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypnotherapy Services</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Trance Effect Hypnotherapy - Transformative Therapy Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        /* Apply custom fonts */
         body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
+            font-family: 'Lato', sans-serif;
         }
-        header {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 2rem;
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
         }
-        nav {
-            background: #34495e;
-            padding: 1rem;
+        /* Simple fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .fade-in-element {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0; /* Start hidden */
+        }
+        /* Ensure animations only run once when visible */
+        .animate-on-scroll {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            transform: translateY(30px);
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom transition for nav links */
         nav a {
-            color: white;
-            margin: 0 1rem;
-            text-decoration: none;
+            position: relative;
+            transition: color 0.3s ease;
         }
-        .section {
-            padding: 2rem;
-            max-width: 800px;
-            margin: auto;
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px; /* Adjust position */
+            left: 50%;
+            transform: translateX(-50%);
+            /* Use a lighter color for the underline in dark mode */
+            background-color: currentColor;
+            transition: width 0.3s ease;
         }
-        .cta-button {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        footer {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            position: fixed;
-            bottom: 0;
+        nav a:hover::after {
             width: 100%;
         }
+        /* Style for the active link (requires JS or server-side logic) */
+        /* nav a.active { font-weight: bold; color: #2dd4bf; } */ /* Teal accent */
+        /* nav a.active::after { width: 100%; } */
+
     </style>
+    <script>
+        // Tailwind Configuration - Dark Theme
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Adjusted for Dark Theme
+                        'primary': {
+                            light: '#5eead4', // Lighter Teal (pop)
+                            DEFAULT: '#14b8a6', // Teal 500
+                            dark: '#0d9488'   // Darker Teal
+                        },
+                        'secondary': '#cbd5e1', // Slate 300 (Light gray for text)
+                        'accent': '#818cf8', // Indigo 400 (Slightly brighter accent)
+                        'dark-bg': '#1e293b', // Slate 800 (Main dark background)
+                        'medium-dark-bg': '#334155', // Slate 700 (Slightly lighter dark bg)
+                        'light-text': '#f1f5f9', // Slate 100 (Primary light text)
+                        'muted-text': '#94a3b8', // Slate 400 (Muted light text)
+                    },
+                    fontFamily: {
+                        'sans': ['Lato', 'sans-serif'],
+                        'serif': ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <header>
-        <h1>Welcome to Trance Effect Hypnotherapy</h1>
-        <p>Transform your life with professional hypnotherapy services.</p>
+<body class="bg-dark-bg text-secondary antialiased overflow-x-hidden">
+
+    <header class="bg-medium-dark-bg shadow-md sticky top-0 z-50 transition-shadow duration-300">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home" class="text-3xl font-bold text-primary hover:text-primary-light transition duration-300 font-serif">
+                Trance Effect
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="text-secondary hover:text-primary-light">Home</a>
+                <a href="#about" class="text-secondary hover:text-primary-light">About</a>
+                <a href="#services" class="text-secondary hover:text-primary-light">Services</a>
+                <a href="#contact" class="text-secondary hover:text-primary-light">Contact</a>
+                <a href="#book" class="bg-accent text-white px-5 py-2 rounded-full hover:bg-indigo-500 transition duration-300 text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5">Book a Session</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-secondary hover:text-primary-light focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden bg-medium-dark-bg border-t border-slate-600">
+             <a href="#home" class="block px-6 py-3 text-secondary hover:bg-slate-600 hover:text-primary-light transition duration-150">Home</a>
+            <a href="#about" class="block px-6 py-3 text-secondary hover:bg-slate-600 hover:text-primary-light transition duration-150">About</a>
+            <a href="#services" class="block px-6 py-3 text-secondary hover:bg-slate-600 hover:text-primary-light transition duration-150">Services</a>
+            <a href="#contact" class="block px-6 py-3 text-secondary hover:bg-slate-600 hover:text-primary-light transition duration-150">Contact</a>
+            <a href="#book" class="block px-6 py-3 text-accent hover:bg-slate-600 font-semibold transition duration-150">Book a Session</a>
+        </div>
     </header>
-    <nav>
-        <a href="#home">Home</a>
-        <a href="#about">About</a>
-        <a href="#services">Services</a>
-        <a href="#contact">Contact</a>
-        <a href="#book">Book a Session</a>
-    </nav>
-    <div class="section" id="home">
-        <h2>Discover Hypnotherapy</h2>
-        <p>Experience personalized sessions to address stress, anxiety, and more. Start your journey to wellness today.</p>
-        <a href="#book" class="cta-button">Book Now</a>
-    </div>
-    <div class="section" id="about">
-        <h2>About Me</h2>
-        <p>I’m Mehwish, a certified hypnotherapist with 6 of experience helping clients achieve their goals.</p>
-    </div>
-    <div class="section" id="services">
-        <h2>Services</h2>
-        <ul>
-            <li>Individual Hypnotherapy Sessions</li>
-            <li>Group Therapy Workshops</li>
-            <li>Online Consultations</li>
-        </ul>
-    </div>
-    <div class="section" id="contact">
-        <h2>Contact</h2>
-        <p>Email: mehwish@gmail.com</p>
-        <p>Phone: 123456789</p>
-    </div>
-    <div class="section" id="book">
-        <h2>Book a Session</h2>
-        <p>Schedule your appointment directly through our booking system.</p>
-        <!-- Replace with Setmore embed code -->
-        <a href="[Your Setmore Booking URL]" class="cta-button">Book Now</a>
-    </div>
-    <footer>
-        <p>© 2025 [Your Name] Hypnotherapy. All rights reserved.</p>
+
+    <main>
+        <section id="home" class="relative min-h-[70vh] md:min-h-[85vh] flex items-center text-center bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 overflow-hidden">
+             <div class="absolute top-0 left-0 w-64 h-64 bg-teal-900 rounded-full opacity-20 -translate-x-16 -translate-y-16 filter blur-3xl"></div>
+            <div class="absolute bottom-0 right-0 w-72 h-72 bg-indigo-800 rounded-full opacity-20 translate-x-16 translate-y-16 filter blur-3xl"></div>
+
+            <div class="container mx-auto px-6 z-10">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-light-text mb-5 leading-tight fade-in-element">
+                    Unlock Your Potential with Trance Effect
+                </h1>
+                 <p class="text-lg md:text-xl text-muted-text mb-10 max-w-3xl mx-auto fade-in-element" style="animation-delay: 0.2s;">
+                    Experience compassionate, professional hypnotherapy designed to help you overcome obstacles and embrace lasting well-being.
+                </p>
+                <a href="#book" class="bg-accent text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-indigo-500 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 fade-in-element" style="animation-delay: 0.4s;">
+                    Begin Your Transformation
+                </a>
+            </div>
+        </section>
+
+        <section id="about" class="py-20 md:py-32 bg-dark-bg">
+            <div class="container mx-auto px-6 md:flex items-center gap-16">
+                 <div class="mb-10 md:mb-0 md:w-2/5 flex justify-center animate-on-scroll">
+                    <img
+                        src="https://images.unsplash.com/photo-1581091019410-ff503011c7a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                        onerror="this.onerror=null; this.src='https://placehold.co/400x400/334155/f1f5f9?text=Mehwish+Photo'; this.alt='Placeholder for Mehwish - Certified Hypnotherapist'" alt="Mehwish - Certified Hypnotherapist providing a calming presence"
+                        class="rounded-lg shadow-xl w-full max-w-sm h-auto object-cover transform transition duration-500 hover:scale-105"
+                    >
+                 </div>
+                 <div class="md:w-3/5 text-center md:text-left animate-on-scroll" style="transition-delay: 0.2s;">
+                     <h2 class="text-3xl md:text-4xl font-bold text-light-text mb-6">Meet Mehwish</h2>
+                    <p class="text-muted-text mb-5 leading-relaxed text-lg">
+                        Hello! I’m Mehwish, a certified hypnotherapist with 6 years of dedicated experience guiding individuals towards overcoming challenges and achieving profound personal growth. My approach is built on empathy, collaboration, and tailoring each session to your unique journey.
+                    </p>
+                    <p class="text-muted-text leading-relaxed text-lg">
+                        Whether you're seeking relief from stress and anxiety, aiming to build confidence, or ready to break free from unwanted habits, I'm here to support you. Let's unlock your inner resources together.
+                    </p>
+                 </div>
+            </div>
+        </section>
+
+        <section id="services" class="py-20 md:py-32 bg-medium-dark-bg">
+            <div class="container mx-auto px-6">
+                 <h2 class="text-3xl md:text-4xl font-bold text-light-text text-center mb-16 animate-on-scroll">How Hypnotherapy Can Empower You</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div class="bg-dark-bg p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 text-center transform hover:-translate-y-2 animate-on-scroll">
+                         <div class="text-primary text-5xl mb-5 mx-auto w-16 h-16 flex items-center justify-center bg-slate-700 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                         </div>
+                         <h3 class="text-2xl font-semibold text-light-text mb-4 font-serif">Individual Sessions</h3>
+                        <p class="text-muted-text leading-relaxed">Deeply personalized one-on-one hypnotherapy, carefully crafted to address your unique goals and challenges effectively.</p>
+                    </div>
+                    <div class="bg-dark-bg p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 text-center transform hover:-translate-y-2 animate-on-scroll" style="transition-delay: 0.15s;">
+                         <div class="text-primary text-5xl mb-5 mx-auto w-16 h-16 flex items-center justify-center bg-slate-700 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" /></svg>
+                        </div>
+                         <h3 class="text-2xl font-semibold text-light-text mb-4 font-serif">Group Workshops</h3>
+                        <p class="text-muted-text leading-relaxed">Engage in supportive group settings focused on shared goals like stress mastery or habit transformation.</p>
+                    </div>
+                    <div class="bg-dark-bg p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 text-center transform hover:-translate-y-2 animate-on-scroll" style="transition-delay: 0.3s;">
+                         <div class="text-primary text-5xl mb-5 mx-auto w-16 h-16 flex items-center justify-center bg-slate-700 rounded-full">
+                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z" /></svg>
+                         </div>
+                         <h3 class="text-2xl font-semibold text-light-text mb-4 font-serif">Online Consultations</h3>
+                        <p class="text-muted-text leading-relaxed">Access convenient, confidential, and highly effective hypnotherapy sessions from anywhere in the world.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-20 md:py-32 bg-dark-bg">
+            <div class="container mx-auto px-6 text-center">
+                 <h2 class="text-3xl md:text-4xl font-bold text-light-text mb-6 animate-on-scroll">Connect With Me</h2>
+                <p class="text-muted-text mb-10 max-w-xl mx-auto text-lg animate-on-scroll" style="transition-delay: 0.1s;">
+                    Ready to take the next step or have questions about how hypnotherapy can help you? Please don't hesitate to reach out.
+                </p>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12 animate-on-scroll" style="transition-delay: 0.2s;">
+                    <div class="text-lg">
+                         <span class="font-semibold text-secondary block mb-1">Email</span>
+                        <a href="mailto:mehwish@gmail.com" class="text-primary hover:text-accent hover:underline transition duration-300">mehwish@gmail.com</a>
+                    </div>
+                    <div class="text-lg">
+                        <span class="font-semibold text-secondary block mb-1">Phone</span>
+                        <a href="tel:123456789" class="text-primary hover:text-accent hover:underline transition duration-300">123-456-789</a>
+                    </div>
+                </div>
+                 <hr class="my-12 border-slate-600 max-w-xs mx-auto animate-on-scroll" style="transition-delay: 0.3s;">
+            </div>
+        </section>
+
+        <section id="book" class="py-20 md:py-32 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900">
+            <div class="container mx-auto px-6 text-center">
+                 <h2 class="text-3xl md:text-4xl font-bold text-light-text mb-5 animate-on-scroll">Ready to Schedule Your Session?</h2>
+                <p class="text-muted-text mb-10 max-w-xl mx-auto text-lg animate-on-scroll" style="transition-delay: 0.15s;">
+                    Embark on your journey towards positive change. Booking your confidential appointment online is simple and secure.
+                </p>
+                <a href="[Your Setmore Booking URL]" target="_blank" rel="noopener noreferrer" class="bg-accent text-white px-10 py-4 rounded-full text-xl font-semibold hover:bg-indigo-500 transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 animate-on-scroll" style="transition-delay: 0.3s;">
+                    Book Your Appointment
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-10">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-sm mb-4">&copy; 2025 Trance Effect Hypnotherapy | Gujrat Qasba, Punjab, Pakistan</p>
+            <div class="space-x-6">
+                 <a href="#" class="hover:text-slate-200 transition duration-300 text-sm">Privacy Policy</a>
+                <a href="#" class="hover:text-slate-200 transition duration-300 text-sm">Terms of Service</a>
+            </div>
+        </div>
     </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const menuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // Check if elements exist before adding listeners
+        if (menuButton && mobileMenu) {
+            menuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                // Set ARIA attribute for accessibility
+                const isExpanded = !mobileMenu.classList.contains('hidden');
+                menuButton.setAttribute('aria-expanded', isExpanded);
+            });
+
+            // Close menu when a link is clicked
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuButton.setAttribute('aria-expanded', 'false');
+                });
+            });
+        }
+
+        // Simple Scroll Animation Logic
+        const scrollElements = document.querySelectorAll('.animate-on-scroll');
+
+        // Check if Intersection Observer is supported
+        if ('IntersectionObserver' in window) {
+            const elementObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    // If element is in view, add 'is-visible' class
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Optional: Stop observing once animation is triggered
+                        // observer.unobserve(entry.target);
+                    }
+                    // Optional: Remove class if element scrolls out of view (for repeating animation)
+                    // else {
+                    //     entry.target.classList.remove('is-visible');
+                    // }
+                });
+            }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
+
+            scrollElements.forEach(el => {
+                elementObserver.observe(el);
+            });
+        } else {
+            // Fallback for older browsers (less performant)
+            const elementInView = (el, dividend = 1) => {
+                const elementTop = el.getBoundingClientRect().top;
+                return (
+                    elementTop <= (window.innerHeight || document.documentElement.clientHeight) / dividend
+                );
+            };
+
+            const displayScrollElement = (element) => {
+                element.classList.add('is-visible');
+            };
+
+            const handleScrollAnimation = () => {
+                scrollElements.forEach((el) => {
+                    if (elementInView(el, 1.15)) {
+                        displayScrollElement(el);
+                    }
+                })
+            }
+            // Initial check on load & Add scroll event listener
+            handleScrollAnimation();
+            window.addEventListener('scroll', handleScrollAnimation);
+        }
+
+    </script>
+
 </body>
 </html>
